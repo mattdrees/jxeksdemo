@@ -1,0 +1,31 @@
+apiVersion: skaffold/v1alpha2
+kind: Config
+build:
+  tagPolicy:
+    envTemplate:
+      template: "{{.DOCKER_REGISTRY}}/mattdrees/jxeksdemo:{{.VERSION}}"
+  artifacts:
+  - imageName: changeme
+    workspace: .
+    docker: {}
+  local: {}
+deploy:
+  kubectl:
+    manifests:
+profiles:
+- name: dev
+  build:
+    tagPolicy:
+      envTemplate:
+        template: "{{.DOCKER_REGISTRY}}/mattdrees/jxeksdemo:{{.DIGEST_HEX}}"
+    artifacts:
+    - docker: {}
+    local: {}
+  deploy:
+    helm:
+      releases:
+      - name: jxeksdemo
+        chartPath: charts/jxeksdemo
+        setValueTemplates:
+          image.repository: "{{.DOCKER_REGISTRY}}/mattdrees/jxeksdemo"
+          image.tag: "{{.DIGEST_HEX}}"
